@@ -173,8 +173,9 @@ class GPTSoVITSConfig(I18nMixin):
     """Configuration for GPT-SoVITS."""
 
     api_url: str = Field(..., alias="api_url")
+    speaker_wav: str = Field(..., alias="speaker_wav")
+    language: str = Field(..., alias="language")
     text_lang: str = Field(..., alias="text_lang")
-    ref_audio_path: str = Field(..., alias="ref_audio_path")
     prompt_lang: str = Field(..., alias="prompt_lang")
     prompt_text: str = Field(..., alias="prompt_text")
     text_split_method: str = Field(..., alias="text_split_method")
@@ -186,10 +187,14 @@ class GPTSoVITSConfig(I18nMixin):
         "api_url": Description(
             en="URL of the GPT-SoVITS API endpoint", zh="GPT-SoVITS API 端点的 URL"
         ),
-        "text_lang": Description(en="Language of the input text", zh="输入文本的语言"),
-        "ref_audio_path": Description(
-            en="Path to reference audio file", zh="参考音频文件路径"
+        "speaker_wav": Description(
+            en="Path to speaker WAV file for voice cloning",
+            zh="用于声音克隆的说话人音频文件路径",
         ),
+        "language": Description(
+            en="Language code (e.g., en, zh)", zh="语言代码（如 en、zh）"
+        ),
+        "text_lang": Description(en="Language of the input text", zh="输入文本的语言"),
         "prompt_lang": Description(en="Language of the prompt", zh="提示词语言"),
         "prompt_text": Description(en="Prompt text", zh="提示文本"),
         "text_split_method": Description(
@@ -301,6 +306,53 @@ class SherpaOnnxTTSConfig(I18nMixin):
     }
 
 
+class VoicevoxTTSConfig(I18nMixin):
+    """Configuration for Voicevox TTS."""
+
+    host: str = Field(..., alias="host")
+    speaker_id: int = Field(..., alias="speaker_id")
+    speed_scale: float = Field(1.0, alias="speed_scale")
+    pitch_scale: float = Field(0.0, alias="pitch_scale")
+    intonation_scale: float = Field(1.0, alias="intonation_scale")
+    volume_scale: float = Field(1.0, alias="volume_scale")
+    pre_phoneme_length: float = Field(0.1, alias="pre_phoneme_length")
+    post_phoneme_length: float = Field(0.1, alias="post_phoneme_length")
+
+    DESCRIPTIONS: ClassVar[Dict[str, Description]] = {
+        "host": Description(
+            en="URL of the Voicevox engine", zh="Voicevox 引擎的 URL"
+        ),
+        "speaker_id": Description(
+            en="Speaker ID (check available speakers in Voicevox)",
+            zh="说话人 ID（在 Voicevox 中查看可用说话人）",
+        ),
+        "speed_scale": Description(
+            en="Speech speed multiplier (1.0 is normal)",
+            zh="语速倍数（1.0 为正常速度）",
+        ),
+        "pitch_scale": Description(
+            en="Pitch adjustment (0.0 is normal)",
+            zh="音高调整（0.0 为正常音高）",
+        ),
+        "intonation_scale": Description(
+            en="Intonation adjustment (1.0 is normal)",
+            zh="语调调整（1.0 为正常语调）",
+        ),
+        "volume_scale": Description(
+            en="Volume adjustment (1.0 is normal)",
+            zh="音量调整（1.0 为正常音量）",
+        ),
+        "pre_phoneme_length": Description(
+            en="Pre-phoneme length in seconds",
+            zh="音素前长度（秒）",
+        ),
+        "post_phoneme_length": Description(
+            en="Post-phoneme length in seconds",
+            zh="音素后长度（秒）",
+        ),
+    }
+
+
 class TTSConfig(I18nMixin):
     """Configuration for Text-to-Speech."""
 
@@ -316,6 +368,7 @@ class TTSConfig(I18nMixin):
         "gpt_sovits_tts",
         "fish_api_tts",
         "sherpa_onnx_tts",
+        "voicevox_tts",
     ] = Field(..., alias="tts_model")
 
     azure_tts: Optional[AzureTTSConfig] = Field(None, alias="azure_tts")
@@ -331,6 +384,7 @@ class TTSConfig(I18nMixin):
     sherpa_onnx_tts: Optional[SherpaOnnxTTSConfig] = Field(
         None, alias="sherpa_onnx_tts"
     )
+    voicevox_tts: Optional[VoicevoxTTSConfig] = Field(None, alias="voicevox_tts")
 
     DESCRIPTIONS: ClassVar[Dict[str, Description]] = {
         "tts_model": Description(
@@ -357,6 +411,7 @@ class TTSConfig(I18nMixin):
         "sherpa_onnx_tts": Description(
             en="Configuration for Sherpa Onnx TTS", zh="Sherpa Onnx TTS 配置"
         ),
+        "voicevox_tts": Description(en="Configuration for Voicevox TTS", zh="Voicevox TTS 配置"),
     }
 
     @model_validator(mode="after")
@@ -386,5 +441,7 @@ class TTSConfig(I18nMixin):
             values.fish_api_tts.model_validate(values.fish_api_tts.model_dump())
         elif tts_model == "sherpa_onnx_tts" and values.sherpa_onnx_tts is not None:
             values.sherpa_onnx_tts.model_validate(values.sherpa_onnx_tts.model_dump())
+        elif tts_model == "voicevox_tts" and values.voicevox_tts is not None:
+            values.voicevox_tts.model_validate(values.voicevox_tts.model_dump())
 
         return values

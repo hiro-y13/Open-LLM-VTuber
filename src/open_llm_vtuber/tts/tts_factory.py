@@ -74,6 +74,19 @@ class TTSFactory:
                 speaker_wav=kwargs.get("speaker_wav"),
                 language=kwargs.get("language"),
             )
+        elif engine_type == "voicevox_tts":
+            from .voicevox_tts import TTSEngine as VoicevoxTTSEngine
+
+            return VoicevoxTTSEngine(
+                host=kwargs.get("host"),
+                speaker_id=kwargs.get("speaker_id"),
+                speed_scale=kwargs.get("speed_scale"),
+                pitch_scale=kwargs.get("pitch_scale"),
+                intonation_scale=kwargs.get("intonation_scale"),
+                volume_scale=kwargs.get("volume_scale"),
+                pre_phoneme_length=kwargs.get("pre_phoneme_length"),
+                post_phoneme_length=kwargs.get("post_phoneme_length"),
+            )
         elif engine_type == "gpt_sovits_tts":
             from .gpt_sovits_tts import TTSEngine as GSVEngine
 
